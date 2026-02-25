@@ -1,0 +1,16 @@
+<!-- Yo ho ho! This be the project file for our NumberPrinter app. -->
+<!-- It tells the .NET SDK how to build this fine vessel of code. -->
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <!-- Arrr! We be buildin' an executable, not a library. -->
+    <OutputType>Exe</OutputType>
+    <!-- Target the .NET 10 framework — the newest ship in the fleet! -->
+    <TargetFramework>net10.0</TargetFramework>
+    <!-- Implicit usings keep our code clean as a freshly swabbed deck. -->
+    <ImplicitUsings>enable</ImplicitUsings>
+    <!-- Nullable reference types help us avoid the dreaded null kraken! -->
+    <Nullable>enable</Nullable>
+  </PropertyGroup>
+
+</Project>
