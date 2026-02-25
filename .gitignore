@@ -1,0 +1,6 @@
+# Arrr! Keep these build artifacts off me ship!
+bin/
+obj/
+*.user
+*.suo
+*.vs/
