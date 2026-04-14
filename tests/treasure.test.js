@@ -119,6 +119,66 @@ describe("GET /api/treasures/:id", () => {
 });
 
 // ============================================================
+// PUT /api/treasures/:id — Reforgin' plunder (ROUGH-SEAS-001)
+// ============================================================
+describe("PUT /api/treasures/:id", () => {
+  test("should update a treasure and return 200 with updated fields", async () => {
+    // First, stash a treasure
+    const postRes = await request(app)
+      .post("/api/treasures")
+      .send(sampleTreasure);
+
+    const treasureId = postRes.body.id;
+
+    // Now update it with new details
+    const updatedFields = {
+      name: "Platinum Crown",
+      value: 15000,
+      location: "Davy Jones' Locker",
+      dateFound: "2024-06-01T00:00:00.000Z",
+    };
+
+    const res = await request(app)
+      .put(`/api/treasures/${treasureId}`)
+      .send(updatedFields)
+      .expect(200);
+
+    expect(res.body.id).toBe(treasureId);
+    expect(res.body.name).toBe("Platinum Crown");
+    expect(res.body.value).toBe(15000);
+    expect(res.body.location).toBe("Davy Jones' Locker");
+    expect(res.body.dateFound).toBe("2024-06-01T00:00:00.000Z");
+  });
+
+  test("should return 400 when required fields are missing in update", async () => {
+    // Stash a treasure first
+    const postRes = await request(app)
+      .post("/api/treasures")
+      .send(sampleTreasure);
+
+    const treasureId = postRes.body.id;
+
+    // Try updating with incomplete data — only name, no value/location/dateFound
+    const res = await request(app)
+      .put(`/api/treasures/${treasureId}`)
+      .send({ name: "Half-baked Update" })
+      .expect(400);
+
+    expect(res.body).toHaveProperty("error");
+  });
+
+  test("should return 404 when updating a non-existent treasure", async () => {
+    const res = await request(app)
+      .put("/api/treasures/non-existent-id-999")
+      .send(sampleTreasure)
+      .expect(404);
+
+    expect(res.body).toHaveProperty("error");
+    expect(res.body.error).toBe("Treasure not found");
+  });
+});
+
+// ============================================================
 // DELETE /api/treasures/:id — Castin' loot overboard
 // ============================================================
 describe("DELETE /api/treasures/:id", () => {
@@ -144,5 +204,102 @@ describe("DELETE /api/treasures/:id", () => {
 
     expect(res.body).toHaveProperty("error");
     expect(res.body.error).toBe("Treasure not found");
+  });
+});
+
+// ============================================================
+// Edge cases — pluggin' every leak in the hull (BARNACLES-004)
+// ============================================================
+describe("Edge cases — error handling and validation", () => {
+  // KRAKEN-001: Non-JSON content type should return 400 JSON, not a stack trace
+  test("should return 400 JSON when sending non-JSON content type", async () => {
+    const res = await request(app)
+      .post("/api/treasures")
+      .set("Content-Type", "text/plain")
+      .send("This ain't JSON, matey")
+      .expect(400);
+
+    expect(res.body).toHaveProperty("error");
+  });
+
+  // KRAKEN-001: Malformed JSON should return 400 JSON, not a stack trace
+  test("should return 400 JSON when sending malformed JSON", async () => {
+    const res = await request(app)
+      .post("/api/treasures")
+      .set("Content-Type", "application/json")
+      .send("{this ain't valid json}")
+      .expect(400);
+
+    expect(res.body).toHaveProperty("error");
+  });
+
+  // ROUGH-SEAS-002: Whitespace-only strings should be rejected
+  test("should return 400 when name is whitespace only", async () => {
+    const res = await request(app)
+      .post("/api/treasures")
+      .send({
+        ...sampleTreasure,
+        name: "   ",
+      })
+      .expect(400);
+
+    expect(res.body).toHaveProperty("error");
+  });
+
+  test("should return 400 when location is whitespace only", async () => {
+    const res = await request(app)
+      .post("/api/treasures")
+      .send({
+        ...sampleTreasure,
+        location: "   ",
+      })
+      .expect(400);
+
+    expect(res.body).toHaveProperty("error");
+  });
+
+  // BARNACLES-001: Invalid date format should be rejected
+  test("should return 400 for an invalid dateFound format", async () => {
+    const res = await request(app)
+      .post("/api/treasures")
+      .send({
+        ...sampleTreasure,
+        dateFound: "not-a-real-date",
+      })
+      .expect(400);
+
+    expect(res.body).toHaveProperty("error");
+    expect(res.body.error).toMatch(/valid date/i);
+  });
+
+  // BARNACLES-003: Overly long strings should be rejected
+  test("should return 400 when name exceeds max length", async () => {
+    const res = await request(app)
+      .post("/api/treasures")
+      .send({
+        ...sampleTreasure,
+        name: "A".repeat(501),
+      })
+      .expect(400);
+
+    expect(res.body).toHaveProperty("error");
+    expect(res.body.error).toMatch(/500 characters/);
+  });
+
+  // Verify trimming works — leading/trailing spaces are stripped from stored values
+  test("should trim whitespace from string fields on create", async () => {
+    const res = await request(app)
+      .post("/api/treasures")
+      .send({
+        name: "  Trimmed Treasure  ",
+        value: 100,
+        location: "  Trim Island  ",
+        dateFound: "  2024-01-01T00:00:00.000Z  ",
+      })
+      .expect(201);
+
+    expect(res.body.name).toBe("Trimmed Treasure");
+    expect(res.body.location).toBe("Trim Island");
+    expect(res.body.dateFound).toBe("2024-01-01T00:00:00.000Z");
   });
 });
