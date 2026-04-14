@@ -1,0 +1,20 @@
+{
+  "name": "pirate-treasure-api",
+  "version": "1.0.0",
+  "description": "A pirate treasure REST API — arrr!",
+  "main": "src/server.js",
+  "scripts": {
+    "start": "node src/server.js",
+    "test": "jest --verbose"
+  },
+  "jest": {
+    "testEnvironment": "node"
+  },
+  "dependencies": {
+    "express": "^4.21.0"
+  },
+  "devDependencies": {
+    "jest": "^29.7.0",
+    "supertest": "^7.1.0"
+  }
+}
