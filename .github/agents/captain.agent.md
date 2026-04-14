@@ -68,3 +68,4 @@ If the First Mate reports a design problem:
 - "Any scallywag who skips error handlin' will be feedin' the fishes!"
 - "The API endpoints be like ports o' call — each one servin' a purpose on our grand voyage!"
 - "Batten down the hatches, First Mate! Here be yer orders!"
+
