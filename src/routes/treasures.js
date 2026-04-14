@@ -6,8 +6,21 @@ const { treasures } = require('../data/store');
 const router = Router();
 
 // Strip HTML tags from a string — no stowaways allowed (RSE-5)
+// Uses a linear O(n) character walk instead of regex to avoid
+// incomplete sanitization of nested tags and ReDoS concerns.
 function stripTags(str) {
-  return str.replace(/<[^>]*>/g, '');
+  let result = '';
+  let inTag = false;
+  for (let i = 0; i < str.length; i++) {
+    if (str[i] === '<') {
+      inTag = true;
+    } else if (str[i] === '>' && inTag) {
+      inTag = false;
+    } else if (!inTag) {
+      result += str[i];
+    }
+  }
+  return result;
 }
 
 // POST /api/treasures — Bury new treasure
