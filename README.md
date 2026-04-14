@@ -60,6 +60,24 @@ GET /api/treasures/:id
 
 **Response:** `200 OK` with the treasure object, or `404 Not Found`.
 
+### Update a Treasure
+
+```
+PUT /api/treasures/:id
+```
+
+**Request Body:**
+```json
+{
+  "name": "Platinum Crown",
+  "value": 15000,
+  "location": "Davy Jones' Locker",
+  "dateFound": "2024-06-01T00:00:00.000Z"
+}
+```
+
+**Response:** `200 OK` with the updated treasure object, `400 Bad Request` if validation fails, or `404 Not Found`.
+
 ### Delete a Treasure
 
 ```
