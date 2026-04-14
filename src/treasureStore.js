@@ -15,11 +15,13 @@ function getAllTreasures() {
 
 /**
  * getTreasureById — Find a specific piece of plunder by its id
+ * Returns a shallow copy so no scallywag can tamper with the hold directly
  * @param {string} id - The UUID of the treasure we seek
- * @returns {Object|undefined} The treasure if found, undefined if lost to the deep
+ * @returns {Object|undefined} A copy of the treasure if found, undefined if lost to the deep
  */
 function getTreasureById(id) {
-  return treasures.find((t) => t.id === id);
+  const treasure = treasures.find((t) => t.id === id);
+  return treasure ? { ...treasure } : undefined;
 }
 
 /**

@@ -33,12 +33,17 @@ const MAX_STRING_LENGTH = 500;
 function validateTreasureFields(body) {
   const { name, value, location, dateFound } = body;
 
+  // Avast! Check that string fields are actually strings — no objects or arrays sneakin' aboard
+  if (typeof name !== "string" || typeof location !== "string" || typeof dateFound !== "string") {
+    return "name, location, and dateFound must be strings, ye scallywag!";
+  }
+
   // Batten down the hatches — all fields be required
   if (
-    !name || !String(name).trim() ||
+    !name.trim() ||
     value === undefined || value === null ||
-    !location || !String(location).trim() ||
-    !dateFound || !String(dateFound).trim()
+    !location.trim() ||
+    !dateFound.trim()
   ) {
     return "All fields be required: name, value, location, dateFound";
   }
@@ -50,20 +55,20 @@ function validateTreasureFields(body) {
 
   // BARNACLES-001: Validate dateFound is a real date, not gibberish
   // Trim first so leading/trailing whitespace doesn't trip up the Date parser
-  const trimmedDate = String(dateFound).trim();
+  const trimmedDate = dateFound.trim();
   const parsedDate = new Date(trimmedDate);
   if (isNaN(parsedDate.getTime())) {
     return "dateFound must be a valid date string, ye landlubber!";
   }
 
   // BARNACLES-003: No field shall exceed MAX_STRING_LENGTH characters
-  if (String(name).length > MAX_STRING_LENGTH) {
+  if (name.length > MAX_STRING_LENGTH) {
     return `name must not exceed ${MAX_STRING_LENGTH} characters`;
   }
-  if (String(location).length > MAX_STRING_LENGTH) {
+  if (location.length > MAX_STRING_LENGTH) {
     return `location must not exceed ${MAX_STRING_LENGTH} characters`;
   }
-  if (String(dateFound).length > MAX_STRING_LENGTH) {
+  if (dateFound.length > MAX_STRING_LENGTH) {
     return `dateFound must not exceed ${MAX_STRING_LENGTH} characters`;
   }
 
@@ -98,10 +103,10 @@ app.post("/api/treasures", (req, res) => {
   // All checks passed — create the treasure and stow it (trim string fields — ROUGH-SEAS-002)
   const treasure = {
     id: crypto.randomUUID(),
-    name: String(name).trim(),
+    name: name.trim(),
     value,
-    location: String(location).trim(),
-    dateFound: String(dateFound).trim(),
+    location: location.trim(),
+    dateFound: dateFound.trim(),
   };
 
   addTreasure(treasure);
@@ -152,10 +157,10 @@ app.put("/api/treasures/:id", (req, res) => {
 
   // Trim string fields before stowin' (ROUGH-SEAS-002)
   const updates = {
-    name: String(name).trim(),
+    name: name.trim(),
     value,
-    location: String(location).trim(),
-    dateFound: String(dateFound).trim(),
+    location: location.trim(),
+    dateFound: dateFound.trim(),
   };
 
   const updated = updateTreasure(req.params.id, updates);

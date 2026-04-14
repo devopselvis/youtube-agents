@@ -302,4 +302,66 @@ describe("Edge cases — error handling and validation", () => {
     expect(res.body.location).toBe("Trim Island");
     expect(res.body.dateFound).toBe("2024-01-01T00:00:00.000Z");
   });
+
+  // BARNACLES-003 (R2): value: 0 should be rejected (boundary condition)
+  test("should return 400 when value is zero", async () => {
+    const res = await request(app)
+      .post("/api/treasures")
+      .send({
+        ...sampleTreasure,
+        value: 0,
+      })
+      .expect(400);
+
+    expect(res.body).toHaveProperty("error");
+  });
+
+  // ROUGH-SEAS-001 (R2): Non-string types for string fields should be rejected
+  test("should return 400 when name is not a string", async () => {
+    const res = await request(app)
+      .post("/api/treasures")
+      .send({
+        ...sampleTreasure,
+        name: { sneaky: "object" },
+      })
+      .expect(400);
+
+    expect(res.body).toHaveProperty("error");
+    expect(res.body.error).toMatch(/must be strings/);
+  });
+
+  test("should return 400 when location is a number", async () => {
+    const res = await request(app)
+      .post("/api/treasures")
+      .send({
+        ...sampleTreasure,
+        location: 12345,
+      })
+      .expect(400);
+
+    expect(res.body).toHaveProperty("error");
+  });
+
+  // BARNACLES-004 (R2): PUT endpoint edge case — verify trimming works on update
+  test("should trim whitespace from string fields on update via PUT", async () => {
+    const postRes = await request(app)
+      .post("/api/treasures")
+      .send(sampleTreasure);
+
+    const treasureId = postRes.body.id;
+
+    const res = await request(app)
+      .put(`/api/treasures/${treasureId}`)
+      .send({
+        name: "  Updated Treasure  ",
+        value: 9999,
+        location: "  New Location  ",
+        dateFound: "  2025-01-01T00:00:00.000Z  ",
+      })
+      .expect(200);
+
+    expect(res.body.name).toBe("Updated Treasure");
+    expect(res.body.location).toBe("New Location");
+    expect(res.body.dateFound).toBe("2025-01-01T00:00:00.000Z");
+  });
 });
