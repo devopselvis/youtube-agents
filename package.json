@@ -1,0 +1,29 @@
+{
+  "name": "pirate-treasure-api",
+  "version": "1.0.0",
+  "description": "A pirate treasure tracking API",
+  "main": "src/server.js",
+  "scripts": {
+    "start": "node src/server.js",
+    "test": "jest --verbose"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/devopselvis/youtube-agents.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "bugs": {
+    "url": "https://github.com/devopselvis/youtube-agents/issues"
+  },
+  "homepage": "https://github.com/devopselvis/youtube-agents#readme",
+  "dependencies": {
+    "express": "^5.2.1"
+  },
+  "devDependencies": {
+    "jest": "^30.3.0",
+    "supertest": "^7.2.2"
+  }
+}
