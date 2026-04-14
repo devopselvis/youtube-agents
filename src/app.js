@@ -15,5 +15,13 @@ app.get('/', (_req, res) => {
   return res.status(200).json({ message: 'Pirate Treasure API' });
 });
 
+// RSE-1: Error-handling middleware — don't leak the ship's blueprints
+app.use((err, req, res, next) => {
+  if (err.type === 'entity.parse.failed') {
+    return res.status(400).json({ error: 'Invalid JSON in request body' });
+  }
+  return res.status(500).json({ error: 'Internal server error' });
+});
+
 // Export without calling listen — that's the server's job
 module.exports = app;

@@ -5,30 +5,57 @@ const { treasures } = require('../data/store');
 
 const router = Router();
 
+// Strip HTML tags from a string — no stowaways allowed (RSE-5)
+function stripTags(str) {
+  return str.replace(/<[^>]*>/g, '');
+}
+
 // POST /api/treasures — Bury new treasure
 router.post('/', (req, res) => {
   const { name, value, location, dateFound } = req.body;
 
-  // Validate every field like a cautious quartermaster
-  if (name === undefined || name === null || typeof name !== 'string') {
+  // Validate every field like a cautious quartermaster (BRN-6: simplified checks)
+  if (typeof name !== 'string') {
     return res.status(400).json({ error: 'name is required and must be a string' });
   }
-  if (value === undefined || value === null || typeof value !== 'number') {
+  if (typeof value !== 'number') {
     return res.status(400).json({ error: 'value is required and must be a number' });
   }
-  if (location === undefined || location === null || typeof location !== 'string') {
+  if (typeof location !== 'string') {
     return res.status(400).json({ error: 'location is required and must be a string' });
   }
-  if (dateFound === undefined || dateFound === null || typeof dateFound !== 'string') {
+  if (typeof dateFound !== 'string') {
     return res.status(400).json({ error: 'dateFound is required and must be a string' });
   }
 
+  // RSE-2: Empty strings don't pass muster
+  if (name.trim().length === 0) {
+    return res.status(400).json({ error: 'name must not be empty' });
+  }
+  if (location.trim().length === 0) {
+    return res.status(400).json({ error: 'location must not be empty' });
+  }
+  if (dateFound.trim().length === 0) {
+    return res.status(400).json({ error: 'dateFound must not be empty' });
+  }
+
+  // RSE-4: Reject Infinity, -Infinity, and NaN — only real numbers aboard this ship
+  if (!Number.isFinite(value)) {
+    return res.status(400).json({ error: 'value must be a finite number' });
+  }
+
+  // RSE-3: No negative loot — pirates don't bury debts
+  if (value < 0) {
+    return res.status(400).json({ error: 'value must not be negative' });
+  }
+
+  // RSE-5: Sanitize string inputs — scrub the decks of XSS
   const treasure = {
     id: crypto.randomUUID(),
-    name,
+    name: stripTags(name),
     value,
-    location,
-    dateFound,
+    location: stripTags(location),
+    dateFound: stripTags(dateFound),
   };
 
   treasures.push(treasure);

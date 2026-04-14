@@ -87,6 +87,67 @@ describe('POST /api/treasures', () => {
   });
 });
 
+// ─── Rough Seas Fixes — Additional Validation ───────
+describe('POST /api/treasures — Rough Seas fixes', () => {
+  it('RSE-1: returns 400 JSON on malformed JSON body', async () => {
+    const res = await request(app)
+      .post('/api/treasures')
+      .set('Content-Type', 'application/json')
+      .send('{ this is not valid json }');
+
+    expect(res.status).toBe(400);
+    expect(res.body.error).toBeDefined();
+    // Must NOT contain a stack trace or HTML
+    expect(res.text).not.toMatch(/<html/i);
+  });
+
+  it('RSE-2: rejects empty string name with 400', async () => {
+    const res = await request(app)
+      .post('/api/treasures')
+      .send({ name: '', value: 100, location: 'Island', dateFound: '2024-01-01' });
+
+    expect(res.status).toBe(400);
+    expect(res.body.error).toBeDefined();
+  });
+
+  it('RSE-3: rejects negative value with 400', async () => {
+    const res = await request(app)
+      .post('/api/treasures')
+      .send({ name: 'Debt Note', value: -500, location: 'Davy Jones', dateFound: '2024-01-01' });
+
+    expect(res.status).toBe(400);
+    expect(res.body.error).toBeDefined();
+  });
+
+  it('RSE-4: rejects Infinity value with 400', async () => {
+    const res = await request(app)
+      .post('/api/treasures')
+      .set('Content-Type', 'application/json')
+      .send('{"name":"Big Haul","value":1e999,"location":"Nowhere","dateFound":"2024-01-01"}');
+
+    expect(res.status).toBe(400);
+    expect(res.body.error).toBeDefined();
+  });
+
+  it('RSE-5: strips HTML tags from name in stored treasure', async () => {
+    const res = await request(app)
+      .post('/api/treasures')
+      .send({
+        name: '<script>alert("xss")</script>Gold Coin',
+        value: 50,
+        location: '<b>Secret</b> Island',
+        dateFound: '2024-01-01',
+      });
+
+    expect(res.status).toBe(201);
+    expect(res.body.name).toBe('alert("xss")Gold Coin');
+    expect(res.body.location).toBe('Secret Island');
+    // Verify tags are gone — no angle brackets remain
+    expect(res.body.name).not.toMatch(/<[^>]*>/);
+    expect(res.body.location).not.toMatch(/<[^>]*>/);
+  });
+});
+
 // ─── List Treasures ─────────────────────────────────
 describe('GET /api/treasures', () => {
   it('returns an empty array when no treasures exist', async () => {
