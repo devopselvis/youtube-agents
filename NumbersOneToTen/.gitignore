@@ -1,0 +1,3 @@
+# Keep generated .NET build and restore artifacts out of the repository.
+bin/
+obj/
